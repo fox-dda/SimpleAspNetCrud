@@ -27,10 +27,9 @@ namespace Crud.Controllers
         // GET: Employee/Create
         public IActionResult AddOrEdit(int id = 0)
         {
-            if (id == 0)
-                return View(new Employee());
-            else
-                return View(_context.Employees.Find(id));
+            return id == 0
+                ? View(new Employee())
+                : View(_context.Employees.Find(id));
         }
 
         // POST: Employee/Create
@@ -40,16 +39,23 @@ namespace Crud.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddOrEdit([Bind("EmployeeId,FullName,EmpCode,Position,OfficeLocation")] Employee employee)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                if (employee.EmployeeId == 0)
-                    _context.Add(employee);
-                else
-                    _context.Update(employee);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return View(employee);
             }
-            return View(employee);
+
+            if (employee.EmployeeId == 0)
+            {
+                _context.Add(employee);
+            }
+            else
+            {
+                _context.Update(employee);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Employee/Delete/5
@@ -57,7 +63,9 @@ namespace Crud.Controllers
         {
             var employee = await _context.Employees.FindAsync(id);
             _context.Employees.Remove(employee);
+
             await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
     }
